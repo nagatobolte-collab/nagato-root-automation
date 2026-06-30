@@ -96,6 +96,19 @@ if [ "$RESET_MODE" = "hard" ]; then
     check_device_connected
     get_device_info
     display_device_info
+
+    info "Removing previous root environment..."
+
+    adb shell pm uninstall me.weishu.kernelsu >/dev/null 2>&1
+    adb shell pm uninstall me.bmax.apatch >/dev/null 2>&1
+    adb shell pm uninstall io.github.sukisu >/dev/null 2>&1
+    adb shell pm uninstall io.github.resukisu >/dev/null 2>&1
+
+    adb shell 'rm -f /sdcard/Download/init_boot.img' >/dev/null 2>&1
+    adb shell 'find /sdcard/Download -maxdepth 1 -type f -name "*patched*.img" -delete' >/dev/null 2>&1
+    adb shell 'find /sdcard/Download -maxdepth 1 -type f \( -name "Zygisk*.zip" -o -name "LSPosed*.zip" -o -name "PlayIntegrity*.zip" -o -name "Tricky*.zip" -o -name "Yurikey*.zip" -o -name "HMA*.json" \) -delete' >/dev/null 2>&1
+
+    log "Previous root environment cleaned."
 fi
 
 # ── STEP 5: Push init_boot ──
@@ -183,14 +196,14 @@ echo "Watching: /sdcard/Download"
 echo "Patch init_boot.img on your phone..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-LAST_PATCHED=$(adb shell ls -t /sdcard/Download/*.img 2>/dev/null | tr -d "\\r" | grep -Ei "$PATCH_KEYWORD" | head -1)
+LAST_PATCHED=$(adb shell "find /storage/emulated/0/Download -maxdepth 1 -type f -name '*.img'" | tr -d "\r" | grep -Ei "$PATCH_KEYWORD" | tail -1)
 
 START_TIME=$(date +%s)
 TIMEOUT=300
 
 while true
 do
-    PATCHED=$(adb shell ls -t /sdcard/Download/*.img 2>/dev/null | tr -d "\\r" | grep -Ei "$PATCH_KEYWORD" | head -1)
+    PATCHED=$(adb shell "find /storage/emulated/0/Download -maxdepth 1 -type f -name '*.img'" | tr -d "\r" | grep -Ei "$PATCH_KEYWORD" | tail -1)
 
     if [ -n "$PATCHED" ] && [ "$PATCHED" != "$LAST_PATCHED" ]; then
         PATCHED_NAME=$(basename "$PATCHED")

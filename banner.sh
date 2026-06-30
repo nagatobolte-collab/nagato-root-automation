@@ -79,7 +79,7 @@ print_banner() {
     printf '  ██║  ██║╚██████╔╝╚██████╔╝   ██║       ██║  ██╗██║   ██║   \n'
     printf '  ╚═╝  ╚═╝ ╚═════╝  ╚═════╝    ╚═╝       ╚═╝  ╚═╝╚═╝   ╚═╝   \n'
     echo -e "${NC}"
-    echo -e "  ${WHITE}${BOLD}       Professional Pixel Root Toolkit  v2.2${NC}"
+    echo -e "  ${WHITE}${BOLD}       Professional Pixel Root Toolkit  v3.0.0 Stable${NC}"
     echo -e "  ${DIM}       $(date '+%d %b %Y  %H:%M')  •  $TOOLKIT_ROOT${NC}"
     sep
     echo ""

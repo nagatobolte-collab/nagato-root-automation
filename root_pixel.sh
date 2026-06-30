@@ -1,3 +1,4 @@
+    echo ""
 #!/bin/bash
 source "$(dirname "$0")/config.sh"
 source "$(dirname "$0")/banner.sh"
@@ -59,6 +60,18 @@ ANDROID="$D_ANDROID"
 BUILD="$D_BUILD"
 
 select_reset_mode
+
+if [ "$RESET_MODE" = "hard" ]; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    warn "Factory Reset (Erase ALL data)?"
+    echo ""
+    echo "  [1] Yes (Recommended)"
+    echo "  [2] No  (Keep apps & data)"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    read -p "Choice [1/2]: " FACTORY_RESET
+fi
 select_root_manager
 # ── STEP 3: Select correct OTA zip ──
 select_ota
@@ -69,6 +82,9 @@ cd "$PIXEL_FOLDER" || error "pixel 7a folder not found!"
 rm -f init_boot.img payload.bin
 log "Cleaned old files"
 unzip -o "$OTA_ZIP" payload.bin -d "$PIXEL_FOLDER" > /dev/null 2>&1
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
 log "Extracted payload.bin"
 chmod +x "$EXTRACTOR"
 "$EXTRACTOR" payload.bin init_boot > /dev/null 2>&1
@@ -84,6 +100,33 @@ if [ "$RESET_MODE" = "hard" ]; then
     [ -z "$ACTIVE_SLOT" ] && ACTIVE_SLOT=${SLOT#_}
     fastboot flash init_boot_a "$PIXEL_FOLDER/init_boot.img" || error "Failed to flash init_boot_a"
     fastboot flash init_boot_b "$PIXEL_FOLDER/init_boot.img" || error "Failed to flash init_boot_b"
+    if [ "$FACTORY_RESET" = "1" ]; then
+        echo ""
+        echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${RED}        ⚠  FACTORY RESET WARNING ⚠${NC}"
+        echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${YELLOW}This will permanently erase:${NC}"
+        echo ""
+        echo "   • Apps"
+        echo "   • Photos & Videos"
+        echo "   • Downloads"
+        echo "   • Accounts"
+        echo "   • Messages"
+        echo "   • Internal Storage"
+        echo ""
+        echo -e "${RED}THIS ACTION CANNOT BE UNDONE!${NC}"
+        echo ""
+        read -p "Type YES to continue: " CONFIRM_RESET
+
+        if [ "$CONFIRM_RESET" != "YES" ]; then
+            warn "Factory Reset cancelled."
+            FACTORY_RESET=2
+        fi
+        if [ "$CONFIRM_RESET" = "YES" ]; then
+            fastboot -w || error "Factory reset failed"
+        fi
+    fi
+
     fastboot reboot
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

@@ -71,7 +71,15 @@ display_device_info() {
     printf "  ${WHITE}%-14s${NC} ${GREEN}Android %s${NC}\n" "Android" "$D_ANDROID"
     printf "  ${WHITE}%-14s${NC} ${YELLOW}%s${NC}\n" "Build" "$D_BUILD"
     printf "  ${WHITE}%-14s${NC} ${BLUE}%s${NC}\n" "Active slot" "${D_SLOT:-unknown}"
-    printf "  ${WHITE}%-14s${NC} ${RED}%s${NC}\n" "Bootloader" "${D_BOOTLOADER:-unknown}"
+    if [ "$D_BOOTLOADER" = "0" ]; then
+        BOOT_STATUS="🔓 Unlocked"
+    elif [ "$D_BOOTLOADER" = "1" ]; then
+        BOOT_STATUS="🔒 Locked"
+    else
+        BOOT_STATUS="$D_BOOTLOADER"
+    fi
+
+    printf "  ${WHITE}%-14s${NC} ${RED}%s${NC}\n" "Bootloader" "$BOOT_STATUS"
     sep
     echo ""
 }

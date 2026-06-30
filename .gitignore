@@ -1,0 +1,51 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editors
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+LOGS/
+*.log
+
+# Temporary / generated
+payload.bin
+init_boot.img
+output/
+*.img
+*.bin
+*.bak
+*.bak2
+
+# APKs
+APK/
+*.apk
+
+# Modules
+MODULES/
+*.zip
+
+# OTA
+OTA/
+*-ota-*.zip
+
+# Config files
+CONFIG/*.json
+CONFIG/*.conf
+
+# Extractor binary
+android-ota-extractor
+
+# Keep folder structure
+!APK/.gitkeep
+!MODULES/.gitkeep
+!OTA/.gitkeep
+!CONFIG/.gitkeep
+!LOGS/.gitkeep

@@ -1,0 +1,293 @@
+=====================================
+TERMUX COMPLETE COMMANDS REFERENCE
+=====================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CONNECT MAC TO TERMUX VIA SSH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PURPOSE: Control Termux from Mac keyboard directly
+
+On Phone (Termux):
+  pkg install openssh       → Install SSH server
+  sshd                      → Start SSH server
+  passwd                    → Set password
+  ifconfig                  → Get phone IP address
+
+On Mac (Terminal):
+  ssh -p 8022 PHONE_IP      → Connect to phone
+  Example: ssh -p 8022 192.168.1.71
+
+To disconnect:
+  exit                      → Close SSH session
+
+NOTE: Both Mac and phone must be on same WiFi
+NOTE: Run 'sshd' on phone every time after restart
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. DEX2C PROTECTION SETUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PURPOSE: Protect your APK by converting Java code to C++
+
+Location: /storage/emulated/0/dex2c-protection/
+
+Install (one time only):
+  cd /storage/emulated/0/dex2c-protection
+  bash termux_install.sh
+  → OLLVM question: Y
+  → NDK version: 1 (r25c)
+
+Config file (dcc.cfg) - already set:
+  NDK path: /data/data/com.termux/files/home/android-sdk/ndk/25.2.9519653
+  OLLVM: enabled
+  Signing: debug.keystore
+
+Set filter (which classes to protect):
+  cat > filter.txt << 'EOF'
+  com/yourpackage/name/.*
+  EOF
+
+Get package name of APK:
+  python3 -c "
+  from androguard.core import apk
+  a = apk.APK('/path/to/your.apk')
+  print('Package:', a.get_package())
+  "
+
+Protect APK command:
+  cd /storage/emulated/0/dex2c-protection
+  python3 dcc.py -a input.apk -o protected.apk -p -d
+
+  Flags:
+  -a = input APK path
+  -o = output APK path
+  -p = obfuscate strings
+  -d = dynamic register (extra protection)
+
+Output: protected.apk in same folder
+
+Check if still running:
+  ps aux | grep ndk | grep -v grep
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DECOMPILER SETUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PURPOSE: Analyze any APK - get Java code, report, permissions etc
+
+Location: /storage/emulated/0/decompiler/
+
+Folder structure:
+  input/    → Put APK here before running
+  output/   → Decompiled files appear here
+  reports/  → HTML report appears here
+
+How to use:
+  1. Copy APK to input folder:
+     cp /path/to/your.apk /storage/emulated/0/decompiler/input/
+
+  2. Run decompiler:
+     bash /storage/emulated/0/decompiler/decompile.sh
+
+  3. Check output:
+     /storage/emulated/0/decompiler/output/APKNAME/        → Smali files
+     /storage/emulated/0/decompiler/output/APKNAME_java/   → Java files
+     /storage/emulated/0/decompiler/reports/APKNAME.html   → HTML Report
+
+HTML Report contains:
+  - App info (package, version, SDK)
+  - All permissions (red = dangerous)
+  - Protection detection (dex2c, ProGuard etc)
+  - SDKs used (Firebase, OkHttp etc)
+  - Encryption methods
+  - Hardcoded URLs
+  - Network IPs
+  - All classes list
+
+Install required tools (one time):
+  pkg install jadx
+  pip install androguard
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. WHATSAPP BOT - PM2 COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PURPOSE: Manage WhatsApp bot on VPS
+
+Connect to VPS:
+  ssh root@194.238.17.87
+
+Check status:
+  pm2 status
+
+View logs:
+  pm2 logs main-bot --lines 30 --nostream
+  pm2 logs subbot --lines 30 --nostream
+  pm2 logs payment-bot --lines 30 --nostream
+
+Restart bots:
+  pm2 restart main-bot --update-env
+  pm2 restart subbot --update-env
+  pm2 restart payment-bot
+
+Stop/Start:
+  pm2 stop main-bot
+  pm2 start main-bot --update-env
+
+Save PM2 config:
+  pm2 save
+
+If bot crashes - run directly to see error:
+  node ~/my-first-whatsapp-project/index.js 2>&1 | head -30
+
+Clear sessions and reconnect:
+  pm2 stop main-bot
+  rm -rf ~/my-first-whatsapp-project/sessions/*
+  pm2 start main-bot --update-env
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. WHATSAPP BOT - DEPLOY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Deploy main bot:
+  scp file root@194.238.17.87:~/my-first-whatsapp-project/
+  ssh root@194.238.17.87 "cd ~/my-first-whatsapp-project && pm2 restart main-bot --update-env"
+
+Deploy payment bot:
+  cd ~/Desktop/payment-bot
+  git add -A && git commit -m "update" && git push origin main
+  ssh root@194.238.17.87 "cd ~/payment-bot-v2 && git pull origin main && pm2 restart payment-bot"
+
+Sync VPS to GitHub:
+  cd ~/my-first-whatsapp-project
+  git add -A && git commit -m "update" && git push origin main
+
+Sync Mac from GitHub:
+  cd ~/Desktop/whatsapp-automation-37ab1f4eac2e88e1bc78e9ce5ece5e81f5f9ef64
+  git pull origin main
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. FIREBASE KEY FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PURPOSE: Fix Invalid JWT Signature error
+
+1. Go to Firebase Console:
+   https://console.firebase.google.com/project/whatsapp-bot-memory/settings/serviceaccounts/adminsdk
+
+2. Generate new private key
+
+3. Upload to VPS:
+   scp ~/Downloads/firebase-key.json root@194.238.17.87:~/my-first-whatsapp-project/firebase-key.json
+
+4. Restart bot:
+   ssh root@194.238.17.87 "pm2 restart main-bot --update-env"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. PROXY SETUP (Webshare)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PURPOSE: Route WhatsApp through residential IP to avoid bans
+
+Current proxy: 38.154.203.95:5863
+Username: ysunonrc
+Password: d2q29updyegq
+
+If proxy stops working:
+1. Go to webshare.io → Free → Proxy List
+2. Pick working proxy
+3. Update client.js:
+   ssh root@194.238.17.87
+   nano ~/my-first-whatsapp-project/providers/whatsapp-web/client.js
+   Find: --proxy-server line
+   Replace IP and port
+   pm2 restart main-bot --update-env
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. USEFUL TERMUX COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Keep screen on during long tasks:
+  termux-wake-lock
+
+Check running processes:
+  ps aux | grep PROCESSNAME
+
+Check storage:
+  df -h
+
+Check RAM:
+  free -h
+
+Install package:
+  pkg install PACKAGENAME
+
+Install Python package:
+  pip install PACKAGENAME
+
+Start new session:
+  Swipe from left edge → New Session
+
+Kill a process:
+  pkill -f PROCESSNAME
+
+Check IP:
+  ifconfig | grep "inet " | grep -v 127.0.0.1
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. IMPORTANT PATHS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Phone:
+  dex2c:      /storage/emulated/0/dex2c-protection/
+  decompiler: /storage/emulated/0/decompiler/
+  downloads:  /storage/emulated/0/Download/
+  termux home: /data/data/com.termux/files/home/
+  ndk:        /data/data/com.termux/files/home/android-sdk/ndk/25.2.9519653/
+
+VPS:
+  main bot:   ~/my-first-whatsapp-project/
+  payment bot:~/payment-bot-v2/
+  firebase key:~/my-first-whatsapp-project/firebase-key.json
+  sessions:   ~/my-first-whatsapp-project/sessions/
+  apk name:   ~/my-first-whatsapp-project/data/apkname.txt
+
+Mac:
+  main bot:   ~/Desktop/whatsapp-automation-37ab1f4eac2e88e1bc78e9ce5ece5e81f5f9ef64/
+  payment bot:~/Desktop/payment-bot/
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. QUICK FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bot not starting:
+  node ~/my-first-whatsapp-project/index.js 2>&1 | head -30
+
+WhatsApp keeps disconnecting:
+  pm2 stop main-bot
+  rm -rf ~/my-first-whatsapp-project/sessions/*
+  pkill -f chrome
+  pm2 start main-bot --update-env
+
+Git push fails:
+  git push --force origin main
+
+Mac out of sync:
+  git fetch origin && git reset --hard origin/main
+
+Firebase error:
+  Check ~/my-first-whatsapp-project/firebase-key.json exists
+  Generate new key from Firebase Console if needed
+
+409 Telegram conflict:
+  Check for duplicate bot processes: ps aux | grep node
+  Kill duplicates: pkill -f index.js
+  Restart cleanly: pm2 restart main-bot --update-env
+
+=====================================
+END OF REFERENCE
+=====================================

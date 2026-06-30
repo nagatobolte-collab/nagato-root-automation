@@ -1,0 +1,29 @@
+============================================
+   NAGATO ROOT SCRIPT — HOW TO RUN
+============================================
+
+STEP 1 — Move script to Desktop:
+Save root_pixel.sh to your Desktop
+
+STEP 2 — Give permission:
+chmod +x ~/Desktop/root_pixel.sh
+
+STEP 3 — Run script:
+bash ~/Desktop/root_pixel.sh
+
+STEP 4 — Connect one phone at a time via USB
+
+============================================
+NOTE: For Pixel 7 Pro download OTA from:
+developers.google.com/android/ota#cheetah
+Rename to: cheetah-ota-cp1a.260505.005.zip
+Put in: ~/Desktop/pixel 7a/ folder
+============================================
+
+============================================
+BEFORE RUNNING — DO ON EACH PHONE:
+1. Settings → About Phone → tap Build Number 7x
+2. Developer Options → USB Debugging ON
+3. Developer Options → OEM Unlocking ON
+4. Connect USB → tap Allow on phone
+============================================
